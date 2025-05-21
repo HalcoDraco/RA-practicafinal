@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<robot name="wood_piece">
+
+    <link name="base">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.03 0.03 0.03" />
+            </geometry>
+            <material name="verde">
+				<color rgba="0.0 1.0 0.0 1" />
+			</material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.03 0.03 0.03" />
+            </geometry>
+        </collision>
+    </link>
+
+</robot>

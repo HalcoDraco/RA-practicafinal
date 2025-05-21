@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+
+<Problem name="UR3e_FIB_UPC">
+
+	<Robot robot="robots/ur3e_gripper_rg6.urdf" scale="1.0">
+		<Home TH="0.0" WZ="0.0" WY="0.0" WX="0.0" Z="0.0" Y="0.0" X="0.0" />
+	</Robot>
+
+	<!-- <Obstacle obstacle="obstacles/fib_upc_lab/fiblab_desk.urdf" scale="1.0">
+        <Home TH="0.0" WZ="0.0" WY="0.0" WX="0.0" Z="0.0" Y="-0.9" X="-0.8" />
+		<KauthamName name="table" />
+	</Obstacle> -->
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wall.urdf" scale="1.0">
+        <Home TH="1.5708" WZ="1.0" WY="0.0" WX="0.0" Z="1.0" Y="0.0" X="-0.5" />
+		<KauthamName name="wall" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/pieza_verde.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="0" X="0.47" />
+		<KauthamName name="fuera_O_1" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/pieza_verde.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="0" X="0.354" />
+		<KauthamName name="fuera_O_2" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/pieza_rojo.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.058" X="0.274" />
+		<KauthamName name="fuera_X_1" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/pieza_rojo.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.173" X="0.274" />
+		<KauthamName name="fuera_X_2" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/pieza_verde.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.234" X="0.33" />
+		<KauthamName name="pos_1" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.146" X="0.33" />
+		<KauthamName name="pos_2" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.06" X="0.33" />
+		<KauthamName name="pos_3" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.234" X="0.4" />
+		<KauthamName name="pos_4" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.146" X="0.4" />
+		<KauthamName name="pos_5" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.06" X="0.4" />
+		<KauthamName name="pos_6" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/pieza_rojo.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.234" X="0.472" />
+		<KauthamName name="pos_7" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.146" X="0.472" />
+		<KauthamName name="pos_8" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.005 " Y="-0.06" X="0.472" />
+		<KauthamName name="pos_9" />
+	</Obstacle>
+
+	<Obstacle obstacle="obstacles/fib_upc_lab/wood_piece.urdf" scale="1.0">
+        <Home TH="2.7868" WZ="0.0" WY="0.0" WX="0.0" Z="0.15 " Y="-0.146" X="0.4" />
+		<KauthamName name="default_pos" />
+	</Obstacle>
+
+	<Controls robot="controls/ur3e_robot.cntr"/>
+
+	<Planner>
+		<Parameters>
+			<Name>omplRRT</Name>
+			<Parameter name="_Max Planning Time">15.0</Parameter>
+			<Parameter name="_Speed Factor">1</Parameter>
+			<Parameter name="Range">0.02</Parameter>
+			<Parameter name="Goal Bias">0.05</Parameter>
+		</Parameters>
+		<Queries>
+			<Query>
+				<!-- IS THE SAME ORDER OF CONTROLS FROM .cntr FILE -->
+				<!-- [q0, q1, q2, q3, q4, q5, gripper] -->
+				<!-- These values are the control values [min, max] = [0, 1] -->
+				<Init>0.500 0.375 0.500 0.375 0.500 0.500 0.20</Init>
+				<Goal>0.548 0.342 0.326 0.375 0.625 0.550 0.890</Goal>
+			</Query>
+		</Queries>
+	</Planner>
+
+</Problem>
