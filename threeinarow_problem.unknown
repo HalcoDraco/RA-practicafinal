@@ -27,10 +27,10 @@
     (in o1 c1)   ; O en arriba izquierda
 
     ;; fichas aún por colocar
-    (in x2 fuera3)
-    (in o2 fuera4)
-    (in x3 fuera5)
-    (in o3 fuera6)
+    (in x2 fuera1)
+    (in o2 fuera3)
+    (in x3 fuera2)
+    (in o3 fuera4)
 
     ;; casillas ocupadas
     (ocupada c1)

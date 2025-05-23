@@ -12,8 +12,10 @@
     (handEmpty ?r - robot)
     (holding ?r - robot ?f - ficha)
     (tieneTipo ?f - ficha ?t - tipo) ; la ficha tiene un tipo (X o O)
+    (casillaEstaFuera ?l - lugar) ; la casilla está fuera del tablero
+    (casillaEstaDentro ?l - lugar) ; la casilla está dentro del tablero
     (in ?f - ficha ?l - lugar)  ; la ficha está en un lugar (casilla o fuera)
-    (ocupada ?c - casilla) ; la casilla está ocupada por una ficha
+    (ocupada ?l - lugar) ; la casilla está ocupada por una ficha
     (juegaX)   ; indica que le toca a X
     (juegaO)   ; indica que le toca a O
   )
@@ -21,14 +23,43 @@
   ;; PICK desde cualquier lugar (casilla o fuera)
   (:action pick
     :parameters (?r - robot ?f - ficha ?l - lugar)
-    :precondition (and 
-      (handEmpty ?r) ; solo puede recoger si la mano está vacía
-      (in ?f ?l) ; la ficha debe estar en el lugar especificado
-      (or 
-      (and (tieneTipo ?f x) (juegaX)) ; Si es X y le toca a X
-      (and (tieneTipo ?f o) (juegaO)) ; Si es O y le toca a O
-    )
-    )
+    :precondition 
+      (and 
+        (handEmpty ?r) ; solo puede recoger si la mano está vacía
+        (in ?f ?l) ; la ficha debe estar en el lugar especificado
+        (or 
+          (and  
+            (tieneTipo ?f x) 
+            (juegaX) 
+            (or 
+              (casillaEstaFuera ?l)
+              (and
+                (casillaEstaDentro ?l)
+                (not 
+                  (exists (?f2 - ficha ?l2 - lugar)
+                    (and (tieneTipo ?f2 x) (casillaEstaFuera ?l2))
+                  )
+                )
+              )
+            )
+          ); Si es X y le toca a X
+          (and 
+            (tieneTipo ?f o)
+            (juegaO)
+            (or 
+              (casillaEstaFuera ?l)
+              (and
+                (casillaEstaDentro ?l)
+                (not 
+                  (exists (?f2 - ficha ?l2 - lugar)
+                    (and (tieneTipo ?f2 o) (casillaEstaFuera ?l2))
+                  )
+                )
+              )
+            )
+          ) ; Si es O y le toca a O
+        )
+      )
     :effect (and
       (holding ?r ?f)
       (not (handEmpty ?r))
