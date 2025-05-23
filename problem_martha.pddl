@@ -2,7 +2,6 @@
   (:domain tresenraya)
 
   (:objects
-    r1 - robot
     x1 x2 x3 - ficha
     o1 o2 o3 - ficha
     x o - tipo
@@ -11,7 +10,7 @@
   )
   (:init
     ;; estado del robot
-    (handEmpty r1)
+    (handEmpty)
 
     ;; tipos de ficha
     (tieneTipo x1 x)

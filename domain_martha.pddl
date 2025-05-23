@@ -3,14 +3,14 @@
   
 
   (:types 
-    robot ficha tipo 
+    ficha tipo 
     lugar
     casilla fuera - lugar ; subtipos de lugar: casilla (parte del tablero) y fuera (fuera del tablero)
   )
 
   (:predicates
-    (handEmpty ?r - robot)
-    (holding ?r - robot ?f - ficha)
+    (handEmpty)
+    (holding ?f - ficha)
     (tieneTipo ?f - ficha ?t - tipo) ; la ficha tiene un tipo (X o O)
     (in ?f - ficha ?l - lugar)  ; la ficha está en un lugar (casilla o fuera)
     (ocupada ?l - lugar) ; la casilla está ocupada por una ficha
@@ -20,9 +20,9 @@
 
   ;; PICK desde cualquier lugar (casilla o fuera)
   (:action pick
-    :parameters (?r - robot ?f - ficha ?l - lugar)
+    :parameters (?f - ficha ?l - lugar)
     :precondition (and 
-      (handEmpty ?r) ; solo puede recoger si la mano está vacía
+      (handEmpty) ; solo puede recoger si la mano está vacía
       (in ?f ?l) ; la ficha debe estar en el lugar especificado
       (or 
       (and (tieneTipo ?f x) (juegaX)) ; Si es X y le toca a X
@@ -45,8 +45,8 @@
     
     
     :effect (and
-      (holding ?r ?f)
-      (not (handEmpty ?r))
+      (holding ?f)
+      (not (handEmpty))
       (not (in ?f ?l)) ; la ficha ya no está en ese lugar
       (when (ocupada ?l) (not (ocupada ?l))) ;; si era una casilla, la desocupa
       (when (tieneTipo ?f x) (and (not (juegaX)) (juegaO))) ;; si es X, se pasa el turno a O
@@ -56,16 +56,16 @@
 
   ;; PLACE en una casilla libre
   (:action place
-    :parameters (?r - robot ?f - ficha ?c - casilla)
+    :parameters (?f - ficha ?c - casilla)
     :precondition (and
-      (holding ?r ?f) ; el robot debe estar sujetando la ficha
+      (holding ?f) ; el robot debe estar sujetando la ficha
       (not (ocupada ?c)) ; la casilla debe estar libre
     )
     :effect (and
       (in ?f ?c) ; la ficha pasa a estar en la casilla
       (ocupada ?c) ; la casilla pasa a estar ocupada
-      (handEmpty ?r)
-      (not (holding ?r ?f))
+      (handEmpty)
+      (not (holding ?f))
     )
   )
 )
