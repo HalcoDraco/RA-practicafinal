@@ -1,0 +1,52 @@
+(define (problem juego-inicial)
+  (:domain tresenraya)
+
+  (:objects
+    r1 - robot
+    x1 x2 x3 - ficha
+    o1 o2 o3 - ficha
+    x o - tipo
+    c1 c2 c3 c4 c5 c6 c7 c8 c9 - casilla
+    fuera1 fuera2 fuera3 fuera4 fuera5 fuera6 - fuera 
+  )
+  (:init
+    ;; estado del robot
+    (handEmpty r1)
+
+    ;; tipos de ficha
+    (tieneTipo x1 x)
+    (tieneTipo x2 x)
+    (tieneTipo x3 x)
+    (tieneTipo o1 o)
+    (tieneTipo o2 o)
+    (tieneTipo o3 o)
+
+    ;; fichas colocadas
+    (in x1 c7)   ; X en abajo izquierda
+    (in o1 c1)   ; O en arriba izquierda
+
+    ;; fichas aún por colocar
+    (in x2 fuera3)
+    (in o2 fuera4)
+    (in x3 fuera5)
+    (in o3 fuera6)
+
+    ;; casillas ocupadas
+    (ocupada c1)
+    (ocupada c7)
+
+    ;; turno actual
+    (juegaX)
+  )
+
+  (:goal (and
+  (in x1 c6)
+  (in x2 c3)
+  (in x3 c9)
+  (in o1 c1)
+  (in o2 c5)
+  (in o3 c8)
+  )
+  
+  )
+)
