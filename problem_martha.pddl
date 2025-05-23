@@ -38,14 +38,26 @@
     (juegaX)
   )
 
-  (:goal (and
-  (in x1 c6)
-  (in x2 c3)
-  (in x3 c9)
-  (in o1 c1)
-  (in o2 c5)
-  (in o3 c8)
+  (:goal 
+  (or
+    ;; Primer objetivo
+    (and
+      (in x1 c6)
+      (in x2 c3)
+      (in x3 c9)
+      (in o1 c1)
+      (in o2 c5)
+      (in o3 c8)
+    )
+    ;; Segundo objetivo alternativo
+    (and
+      (in x1 c6)
+      (in x2 c3)
+      (in x3 c5)   ;; diferente
+      (in o1 c1)
+      (in o2 c6)   ;; diferente
+      (in o3 c8)
+    )
   )
-  
-  )
+)
 )
