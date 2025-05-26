@@ -4,6 +4,10 @@
 
 	<Robot robot="robots/ur3e_gripper_rg6.urdf" scale="1.0">
 		<Home TH="0.0" WZ="0.0" WY="0.0" WX="0.0" Z="0.0" Y="0.0" X="0.0" />
+            <Limits name="X" min="0.36" max="0.38" />
+            <Limits name="Y" min="-0.1" max="0.1" />
+            <Limits name="Z" min="-0.05" max="-0.03" />
+                <ViewLink name="tool0"/>
 	</Robot>
 
 	<!-- <Obstacle obstacle="obstacles/fib_upc_lab/fiblab_desk.urdf" scale="1.0">
@@ -90,21 +94,20 @@
 
 	<Planner>
 		<Parameters>
-			<Name>omplRRT</Name>
-			<Parameter name="_Max Planning Time">15.0</Parameter>
+			<Name>omplRRTConnect</Name>
+			<Parameter name="_Cspace Drawn">0</Parameter>
+			<Parameter name="_Incremental (0/1)">0</Parameter>
+			<Parameter name="_Max Planning Time">10</Parameter>
+			<Parameter name="_Path Drawn (0/1)">1</Parameter>
+			<Parameter name="_Simplify Solution">2</Parameter>
 			<Parameter name="_Speed Factor">1</Parameter>
-			<Parameter name="Range">0.02</Parameter>
-			<Parameter name="Goal Bias">0.05</Parameter>
+			<Parameter name="Range">0.5</Parameter>
 		</Parameters>
 		<Queries>
 			<Query>
-				<!-- IS THE SAME ORDER OF CONTROLS FROM .cntr FILE -->
-				<!-- [q0, q1, q2, q3, q4, q5, gripper] -->
-				<!-- These values are the control values [min, max] = [0, 1] -->
-				<Init>0.500 0.375 0.500 0.375 0.500 0.500 0.20</Init>
-				<Goal>0.548 0.342 0.326 0.375 0.625 0.550 0.890</Goal>
+				<Init>0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5</Init>
+				<Goal>0.662338 0.271613 0.760218 0.722817 0.738732 0.659155 0.676090 0.643239 0.213521 0.770563 0.245352 0.261268 0.500000 0.600000</Goal>
 			</Query>
 		</Queries>
-	</Planner>
 
 </Problem>
