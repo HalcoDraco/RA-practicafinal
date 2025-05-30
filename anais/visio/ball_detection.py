@@ -122,10 +122,10 @@ def detect_colored_balls(image, verbose=False):
 
 
 if __name__ == '__main__':
-    img = cv2.imread('anais/visio/exemple6.jpg')
+    img = cv2.imread('anais/visio/exemple1.jpg')
     if img is None:
         print('Error: could not read input image.')
     else:
-        detected = detect_colored_balls(img, verbose=True)
+        detected = detect_colored_balls(img, verbose=False)
         for col, radius, center in detected:
             print(f"Detected {col} ball at {center} with radius {radius} px")
