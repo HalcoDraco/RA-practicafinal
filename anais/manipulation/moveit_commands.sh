@@ -2,3 +2,4 @@ roscore
 roslaunch turtlebot3_manipulation_gazebo turtlebot3_manipulation_gazebo.launch
 roslaunch turtlebot3_manipulation_moveit_config move_group.launch
 roslaunch turtlebot3_manipulation_moveit_config moveit_rviz.launch
+# play en gazebo (triangulito) para cargar el rviz

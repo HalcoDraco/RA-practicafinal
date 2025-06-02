@@ -2,7 +2,6 @@
 
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <geometry_msgs/Pose.h>
 
 int main(int argc, char** argv)
@@ -42,9 +41,9 @@ int main(int argc, char** argv)
   geometry_msgs::Pose target_pose;
   // For example: shift +0.1 m in x, keep the same orientation:
   target_pose.orientation = current_pose_stamped.pose.orientation;
-  target_pose.position.x = current_pose_stamped.pose.position.x + 0.1;
+  target_pose.position.x = current_pose_stamped.pose.position.x - 0.1;
   target_pose.position.y = current_pose_stamped.pose.position.y;
-  target_pose.position.z = current_pose_stamped.pose.position.z;
+  target_pose.position.z = current_pose_stamped.pose.position.z + 0.05;
 
   move_group.setPoseTarget(target_pose);
 
@@ -52,26 +51,39 @@ int main(int argc, char** argv)
   // 4) Plan to that pose
   //
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  bool success = (move_group.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
   if (!success)
   {
     ROS_ERROR("Failed to plan to target pose");
-    ros::shutdown();
-    return 1;
+    // ros::shutdown();
+    // return 1;
+  } else {
+    ROS_INFO("Planning to goal pose succeeded.");
   }
-  ROS_INFO("Planning to goal pose succeeded.");
 
   //
   // 5) Execute the plan
   //
-  moveit::planning_interface::MoveItErrorCode exe_success = move_group.execute(my_plan);
-  if (exe_success != moveit::planning_interface::MoveItErrorCode::SUCCESS)
+  moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
+  if (exe_success != moveit::core::MoveItErrorCode::SUCCESS)
   {
     ROS_ERROR("Failed to execute plan");
-    ros::shutdown();
-    return 1;
+    // ros::shutdown();
+    // return 1;
+  } else {
+    ROS_INFO("Execution to goal pose succeeded.");
   }
-  ROS_INFO("Execution to goal pose succeeded.");
+
+  while (ros::ok())
+  {
+    geometry_msgs::PoseStamped current_pose_stamped = move_group.getCurrentPose();
+    ROS_INFO_STREAM_NAMED("current_pose", 
+      "Current pose: \n"
+      << current_pose_stamped.pose.position.x << ", "
+      << current_pose_stamped.pose.position.y << ", "
+      << current_pose_stamped.pose.position.z);
+    ros::Duration(2.0).sleep(); // Sleep for 1 second to avoid flooding the console
+  }
 
   ros::shutdown();
   return 0;
