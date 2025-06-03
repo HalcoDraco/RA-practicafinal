@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(turtlebot3_arm_control)
+project(robotic_arm_movement_node)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -9,12 +9,10 @@ project(turtlebot3_arm_control)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
-  control_msgs
-  geometry_msgs
   moveit_core
   moveit_ros_planning_interface
   roscpp
-  trajectory_msgs
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -74,7 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   control_msgs#   geometry_msgs#   trajectory_msgs
+#   std_msgs
 # )
 
 ################################################
@@ -108,8 +106,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES turtlebot3_arm_control
-#  CATKIN_DEPENDS actionlib control_msgs geometry_msgs moveit_core moveit_ros_planning_interface roscpp trajectory_msgs
+#  LIBRARIES robotic_arm_movement_node
+#  CATKIN_DEPENDS actionlib moveit_core moveit_ros_planning_interface roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -126,7 +124,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/turtlebot3_arm_control.cpp
+#   src/${PROJECT_NAME}/robotic_arm_movement_node.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -137,7 +135,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/turtlebot3_arm_control_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/robotic_arm_movement_node_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,10 +152,10 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(arm_move src/arm_move.cpp)
-add_dependencies(arm_move ${arm_move_EXPORTED_TARGETS}
+add_executable(robotic_arm_movement src/robotic_arm_movement.cpp)
+add_dependencies(robotic_arm_movement ${robotic_arm_movement_EXPORTED_TARGETS}
 ${catkin_EXPORTED_TARGETS})
-target_link_libraries(arm_move
+target_link_libraries(robotic_arm_movement
   ${catkin_LIBRARIES}
 )
 
@@ -208,7 +206,7 @@ target_link_libraries(arm_move
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_turtlebot3_arm_control.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_robotic_arm_movement_node.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

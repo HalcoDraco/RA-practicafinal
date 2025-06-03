@@ -49,9 +49,6 @@ const float OPEN_GRIPPER_POSE[2] = {
 
 ///// Global variables /////
 
-ros::NodeHandle nh;
-ros::Publisher orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
-
 // Possible values for the orquestator_communication_msg.data:
 // "none" - No action required
 // "pick" - Activate pick function
@@ -205,7 +202,7 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 {
 	if (msg->data == "pick") {
 		orquestator_communication_msg.data = "none"; // Reset the message to avoid repeated actions
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
 
 		ROS_INFO("Initiating pick action...");
 		bool result = pick_ball_action();
@@ -216,11 +213,11 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 		}
 
 		orquestator_communication_msg.data = "done_pick";
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the pick action is done
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the pick action is done
 
 	} else if (msg->data == "place") {
 		orquestator_communication_msg.data = "none"; // Reset the message to avoid repeated actions
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
 
 		ROS_INFO("Initiating place action...");
 		bool result = place_ball_action();
@@ -231,7 +228,7 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 		}
 
 		orquestator_communication_msg.data = "done_place";
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the place action is done
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the place action is done
 	}
 }
 
@@ -240,9 +237,10 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "RoboticArmMovement");
+	ros::NodeHandle nh;
 	
-	// ros::AsyncSpinner spinner(1);
-	// spinner.start();
+	ros::AsyncSpinner spinner(1);
+	spinner.start();
 
 	ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the groups to initialize
 
@@ -251,13 +249,14 @@ int main(int argc, char **argv)
 	move_group.setPlanningTime(10.0);
 	move_group.setNumPlanningAttempts(2);
 
+	ros::Publisher orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
 	ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
 
 	ros::Rate loop_rate(1); // 1 Hz
 
 	while (ros::ok()) {
-		ros::spinOnce(); // Process incoming messages
-		// orquestator_communication_publisher.publish(orquestator_communication_msg);
+		orquestator_communication_publisher.publish(orquestator_communication_msg);
+		// ros::spinOnce(); // Process incoming messages
 		loop_rate.sleep();
 	}
 
