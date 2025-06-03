@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <moveit/move_group_interface/move_group_interface.h>
 #include <geometry_msgs/Pose.h>
+#include <vector>
 
 int main(int argc, char** argv)
 {
@@ -19,21 +20,19 @@ int main(int argc, char** argv)
   //      rosparam get /move_group/planning_groups
   //    or by opening the SRDF under your config package.
   //
-  static const std::string PLANNING_GROUP = "arm";
-  moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
 
-  ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the move group to initialize
+  moveit::planning_interface::MoveGroupInterface move_group("arm");
+  moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
+
+  ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the groups to initialize
 
   move_group.setMaxVelocityScalingFactor(0.1); // Set the velocity scaling factor
   move_group.setMaxAccelerationScalingFactor(0.1); // Set the acceleration scaling factor
-
   move_group.setGoalPositionTolerance(0.03); // Set position tolerance
   move_group.setGoalOrientationTolerance(0.1); // Set orientation tolerance
-
   move_group.setPlanningTime(10.0);
-
-  // (Optional) Increase the number of attempts (default is 1)
   move_group.setNumPlanningAttempts(2);
+
 
   // (Optional) If you want to see what controllers are attached:
   // move_group.getJointModelGroup("arm")->getActiveJoints();
@@ -96,6 +95,40 @@ int main(int argc, char** argv)
   } else {
     ROS_INFO("Execution to goal pose succeeded.");
   }
+
+  // Read current gripper joint values
+  std::vector<double> gripper_joint_values = gripper_group.getCurrentJointValues();
+  ROS_INFO_STREAM_NAMED("gripper_joint_values", 
+    "Current gripper joint values: "
+    << gripper_joint_values[0] << ", "
+    << gripper_joint_values[1]);
+  // Set gripper joint values to close the gripper
+  gripper_joint_values[0] = 0.15; // Close the gripper
+  gripper_joint_values[1] = 0.15; // Close the gripper
+  gripper_group.setJointValueTarget(gripper_joint_values);
+  // Plan to close the gripper
+  moveit::planning_interface::MoveGroupInterface::Plan gripper_plan;
+  bool gripper_success = (gripper_group.plan(gripper_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+  if (!gripper_success)
+  {
+    ROS_ERROR("Failed to plan to close gripper");
+    // ros::shutdown();
+    // return 1;
+  } else {
+    ROS_INFO("Planning to close gripper succeeded.");
+  }
+  // Execute the gripper plan
+  moveit::core::MoveItErrorCode gripper_exe_success = gripper_group.execute(gripper_plan);
+  if (gripper_exe_success != moveit::core::MoveItErrorCode::SUCCESS)
+  {
+    // Print the error code for debugging
+    ROS_ERROR_STREAM("Execution to close gripper failed with error code: " << gripper_exe_success);
+    // ros::shutdown();
+    // return 1;
+  } else {
+    ROS_INFO("Execution to close gripper succeeded.");
+  }
+
 
   while (ros::ok())
   {
