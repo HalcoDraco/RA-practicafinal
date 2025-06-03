@@ -22,6 +22,19 @@ int main(int argc, char** argv)
   static const std::string PLANNING_GROUP = "arm";
   moveit::planning_interface::MoveGroupInterface move_group(PLANNING_GROUP);
 
+  ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the move group to initialize
+
+  move_group.setMaxVelocityScalingFactor(0.1); // Set the velocity scaling factor
+  move_group.setMaxAccelerationScalingFactor(0.1); // Set the acceleration scaling factor
+
+  move_group.setGoalPositionTolerance(0.03); // Set position tolerance
+  move_group.setGoalOrientationTolerance(0.1); // Set orientation tolerance
+
+  move_group.setPlanningTime(10.0);
+
+  // (Optional) Increase the number of attempts (default is 1)
+  move_group.setNumPlanningAttempts(2);
+
   // (Optional) If you want to see what controllers are attached:
   // move_group.getJointModelGroup("arm")->getActiveJoints();
 
@@ -33,17 +46,26 @@ int main(int argc, char** argv)
     "Initial pose: \n"
     << current_pose_stamped.pose.position.x << ", "
     << current_pose_stamped.pose.position.y << ", "
-    << current_pose_stamped.pose.position.z);
+    << current_pose_stamped.pose.position.z << ", "
+    << current_pose_stamped.pose.orientation.x << ", "
+    << current_pose_stamped.pose.orientation.y << ", "
+    << current_pose_stamped.pose.orientation.z << ", "
+    << current_pose_stamped.pose.orientation.w);
 
   //
   // 3) Define your goal pose
   //
   geometry_msgs::Pose target_pose;
   // For example: shift +0.1 m in x, keep the same orientation:
-  target_pose.orientation = current_pose_stamped.pose.orientation;
-  target_pose.position.x = current_pose_stamped.pose.position.x - 0.1;
-  target_pose.position.y = current_pose_stamped.pose.position.y;
-  target_pose.position.z = current_pose_stamped.pose.position.z + 0.05;
+  //up -0.0367087, 0.00111089, 0.545741, 0.00855517, -0.666897, 0.00955762, 0.74504
+  //down 0.178152, 0.00787757, 0.10994, -0.00708296, 0.464333, 0.0135079, 0.885529
+  target_pose.position.x = -0.037;
+  target_pose.position.y = 0.0;
+  target_pose.position.z = 0.45;
+  target_pose.orientation.x = 0.0;
+  target_pose.orientation.y = -0.667;
+  target_pose.orientation.z = 0.0;
+  target_pose.orientation.w = 0.745;
 
   move_group.setPoseTarget(target_pose);
 
@@ -67,7 +89,8 @@ int main(int argc, char** argv)
   moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
   if (exe_success != moveit::core::MoveItErrorCode::SUCCESS)
   {
-    ROS_ERROR("Failed to execute plan");
+    // Print the error code for debugging
+    ROS_ERROR_STREAM("Execution to goal pose failed with error code: " << exe_success);
     // ros::shutdown();
     // return 1;
   } else {
@@ -81,8 +104,12 @@ int main(int argc, char** argv)
       "Current pose: \n"
       << current_pose_stamped.pose.position.x << ", "
       << current_pose_stamped.pose.position.y << ", "
-      << current_pose_stamped.pose.position.z);
-    ros::Duration(2.0).sleep(); // Sleep for 1 second to avoid flooding the console
+      << current_pose_stamped.pose.position.z << ", "
+      << current_pose_stamped.pose.orientation.x << ", "
+      << current_pose_stamped.pose.orientation.y << ", "
+      << current_pose_stamped.pose.orientation.z << ", "
+      << current_pose_stamped.pose.orientation.w);
+    ros::Duration(1.5).sleep(); // Sleep for 1.5 seconds to avoid flooding the console
   }
 
   ros::shutdown();
