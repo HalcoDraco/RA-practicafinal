@@ -56,7 +56,7 @@ const float OPEN_GRIPPER_POSE[2] = {
 // "done_pick" - Notify that the pick action is done (no action required)
 // "done_place" - Notify that the place action is done (no action required)
 std_msgs::String orquestator_communication_msg;
-ros::Publisher orquestator_communication_publisher;
+// ros::Publisher orquestator_communication_publisher;
 
 ///// Function declarations /////
 
@@ -216,7 +216,7 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 {
 	if (msg->data == "pick") {
 		orquestator_communication_msg.data = "none"; // Reset the message to avoid repeated actions
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
 
 		ROS_INFO("Initiating pick action...");
 		bool result = pick_ball_action();
@@ -227,11 +227,11 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 		}
 
 		orquestator_communication_msg.data = "done_pick";
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the pick action is done
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the pick action is done
 
 	} else if (msg->data == "place") {
 		orquestator_communication_msg.data = "none"; // Reset the message to avoid repeated actions
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
 
 		ROS_INFO("Initiating place action...");
 		bool result = place_ball_action();
@@ -242,7 +242,7 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 		}
 
 		orquestator_communication_msg.data = "done_place";
-		orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the place action is done
+		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the place action is done
 	}
 }
 
@@ -253,26 +253,26 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "RoboticArmMovement");
 	ros::NodeHandle nh;
 	
-	ros::AsyncSpinner spinner(1);
-	spinner.start();
+	// ros::AsyncSpinner spinner(1);
+	// spinner.start();
 
-	ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the groups to initialize
+	// orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
+	// ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
 
-	orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
-	ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
+	pick_ball_action();
 
 	// orquestator_communication_msg.data = "pick"; // Initialize the message to "none"
 	// comunicationCallback(orquestator_communication_msg); // Initial call to set the message
 
-	ros::Rate loop_rate(1); // 1 Hz
+	// ros::Rate loop_rate(1); // 1 Hz
 
-	while (ros::ok()) {
-		// orquestator_communication_publisher.publish(orquestator_communication_msg);
-		// ros::spinOnce(); // Process incoming messages
-		loop_rate.sleep();
-	}
+	// while (ros::ok()) {
+	// 	// orquestator_communication_publisher.publish(orquestator_communication_msg);
+	// 	// ros::spinOnce(); // Process incoming messages
+	// 	loop_rate.sleep();
+	// }
 
-	ros::waitForShutdown(); // Wait for shutdown signal
+	// ros::waitForShutdown(); // Wait for shutdown signal
 	ros::shutdown(); // Shutdown the ROS node
 
 	return 0;

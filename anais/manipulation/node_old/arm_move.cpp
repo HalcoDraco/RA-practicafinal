@@ -98,13 +98,13 @@ int main(int argc, char** argv)
   // For example: shift +0.1 m in x, keep the same orientation:
   //up -0.0367087, 0.00111089, 0.545741, 0.00855517, -0.666897, 0.00955762, 0.74504
   //down 0.178152, 0.00787757, 0.10994, -0.00708296, 0.464333, 0.0135079, 0.885529
-  target_pose.position.x = -0.037;
-  target_pose.position.y = 0.0;
-  target_pose.position.z = 0.45;
-  target_pose.orientation.x = 0.0;
-  target_pose.orientation.y = -0.667;
-  target_pose.orientation.z = 0.0;
-  target_pose.orientation.w = 0.745;
+  target_pose.position.x = PICK_POSE_[0]; // x
+  target_pose.position.y = PICK_POSE_[1]; // y
+  target_pose.position.z = PICK_POSE_[2]; // z
+  target_pose.orientation.x = PICK_POSE_[3]; // orientation.x
+  target_pose.orientation.y = PICK_POSE_[4]; // orientation.y
+  target_pose.orientation.z = PICK_POSE_[5]; // orientation.z
+  target_pose.orientation.w = PICK_POSE_[6]; // orientation.w
 
   move_group.setPoseTarget(target_pose);
 
