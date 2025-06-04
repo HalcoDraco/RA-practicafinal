@@ -57,11 +57,11 @@ const float OPEN_GRIPPER_POSE[2] = {
 // "done_place" - Notify that the place action is done (no action required)
 std_msgs::String orquestator_communication_msg;
 
-moveit::planning_interface::MoveGroupInterface move_group("arm");
-moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
+moveit::planning_interface::MoveGroupInterface move_group;
+moveit::planning_interface::MoveGroupInterface gripper_group;
 
-ros::NodeHandle nh;
-ros::Publisher orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
+ros::Publisher orquestator_communication_publisher;
+ros::Subscriber orquestator_communication_subscriber;
 
 ///// Function declarations /////
 
@@ -239,26 +239,34 @@ void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "RoboticArmMovement");
+	ros::NodeHandle nh;
 	
-	// ros::AsyncSpinner spinner(1);
-	// spinner.start();
+	ros::AsyncSpinner spinner(1);
+	spinner.start();
+
+	move_group = move_group("arm");
+	gripper_group = gripper_group("gripper");
 
 	ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the groups to initialize
 
-	ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
+	orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
+	orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
 
 	move_group.setGoalPositionTolerance(0.03);
 	move_group.setGoalOrientationTolerance(0.1);
 	move_group.setPlanningTime(10.0);
 	move_group.setNumPlanningAttempts(2);
 
-	ros::Rate loop_rate(1); // 1 Hz
+	// ros::Rate loop_rate(1); // 1 Hz
 
-	while (ros::ok()) {
-		// orquestator_communication_publisher.publish(orquestator_communication_msg);
-		ros::spinOnce(); // Process incoming messages
-		loop_rate.sleep();
-	}
+	// while (ros::ok()) {
+	// 	// orquestator_communication_publisher.publish(orquestator_communication_msg);
+	// 	// ros::spinOnce(); // Process incoming messages
+	// 	loop_rate.sleep();
+	// }
+
+	ros::waitForShutdown(); // Wait for shutdown signal
+	ros::shutdown(); // Shutdown the ROS node
 
 	return 0;
 }
