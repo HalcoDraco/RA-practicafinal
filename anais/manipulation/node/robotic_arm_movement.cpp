@@ -29,7 +29,6 @@ public:
 		ros::Duration(1.0).sleep();
 	}
 
-private:
 	// ─── Constants ───────────────────────────────────────────────────────────────
 	// Poses are defined with x, y, z coordinates and orientation in quaternion format (x, y, z, w).
 	const float HOME_POSE_[7] = {
@@ -234,6 +233,8 @@ int main(int argc, char** argv)
 	spinner.start();
 
 	RoboticArmController controller;
+
+	ros::waitForShutdown();
 
 	return 0;	
 }

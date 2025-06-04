@@ -5,6 +5,46 @@
 #include <geometry_msgs/Pose.h>
 #include <vector>
 
+const float HOME_POSE_[7] = {
+  -0.021,  // x
+  0.0,     // y
+  0.378,   // z
+  0.0,     // orientation.x
+  -0.541,  // orientation.y
+  0.0,     // orientation.z
+  0.841    // orientation.w
+};
+
+const float PICK_POSE_[7] = {
+  -0.037,  // x
+  0.0,     // y
+  0.45,    // z
+  0.0,     // orientation.x
+  -0.667,  // orientation.y
+  0.0,     // orientation.z
+  0.745    // orientation.w
+};
+
+const float PLACE_POSE_[7] = {
+  0.178,   // x
+  0.0,     // y
+  0.11,    // z
+  0.0,  // orientation.x
+  0.464,   // orientation.y
+  0.014,   // orientation.z
+  0.886    // orientation.w
+};
+
+const float CLOSED_GRIPPER_POSE_[2] = {
+  0.0,
+  0.0
+};
+
+const float OPEN_GRIPPER_POSE_[2] = {
+  0.0079,
+  0.0079
+};
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "tb3_arm_move_example");
@@ -26,8 +66,8 @@ int main(int argc, char** argv)
 
   ros::Duration(1.0).sleep(); // Sleep for 1 second to allow the groups to initialize
 
-  move_group.setMaxVelocityScalingFactor(0.1); // Set the velocity scaling factor
-  move_group.setMaxAccelerationScalingFactor(0.1); // Set the acceleration scaling factor
+  // move_group.setMaxVelocityScalingFactor(0.1); // Set the velocity scaling factor
+  // move_group.setMaxAccelerationScalingFactor(0.1); // Set the acceleration scaling factor
   move_group.setGoalPositionTolerance(0.03); // Set position tolerance
   move_group.setGoalOrientationTolerance(0.1); // Set orientation tolerance
   move_group.setPlanningTime(10.0);
@@ -40,16 +80,16 @@ int main(int argc, char** argv)
   //
   // 2) Read current end‐effector pose (initial pose)
   //
-  geometry_msgs::PoseStamped current_pose_stamped = move_group.getCurrentPose();
-  ROS_INFO_STREAM_NAMED("initial_pose", 
-    "Initial pose: \n"
-    << current_pose_stamped.pose.position.x << ", "
-    << current_pose_stamped.pose.position.y << ", "
-    << current_pose_stamped.pose.position.z << ", "
-    << current_pose_stamped.pose.orientation.x << ", "
-    << current_pose_stamped.pose.orientation.y << ", "
-    << current_pose_stamped.pose.orientation.z << ", "
-    << current_pose_stamped.pose.orientation.w);
+  // geometry_msgs::PoseStamped current_pose_stamped = move_group.getCurrentPose();
+  // ROS_INFO_STREAM_NAMED("initial_pose", 
+  //   "Initial pose: \n"
+  //   << current_pose_stamped.pose.position.x << ", "
+  //   << current_pose_stamped.pose.position.y << ", "
+  //   << current_pose_stamped.pose.position.z << ", "
+  //   << current_pose_stamped.pose.orientation.x << ", "
+  //   << current_pose_stamped.pose.orientation.y << ", "
+  //   << current_pose_stamped.pose.orientation.z << ", "
+  //   << current_pose_stamped.pose.orientation.w);
 
   //
   // 3) Define your goal pose
@@ -71,8 +111,10 @@ int main(int argc, char** argv)
   //
   // 4) Plan to that pose
   //
+  ROS_INFO("Starting planning to target pose...");
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  bool success = (move_group.plan(my_plan) == moveit::core::MoveItErrorCode::SUCCESS);
+  auto plan_success = move_group.plan(my_plan);
+  bool success = (plan_success == moveit::core::MoveItErrorCode::SUCCESS);
   if (!success)
   {
     ROS_ERROR("Failed to plan to target pose");
