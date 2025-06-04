@@ -12,7 +12,6 @@ public:
 		move_group_("arm"),
 		gripper_group_("gripper")
 	{
-		// 1) Publisher / Subscriber
 		orquestator_comm_pub_ = nh_.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
 		orquestator_comm_sub_ = nh_.subscribe(
 			"/orquestator_manipulation", 1000,
@@ -28,25 +27,6 @@ public:
 
 		// 3) Let the planning groups “warm up” before first use:
 		ros::Duration(1.0).sleep();
-	}
-
-	/// This is the main loop if you ever wanted to run spinOnce() yourself
-	void runWithSpinOnce()
-	{
-		ros::Rate rate(1.0);  // 1 Hz
-		while (ros::ok())
-		{
-			ros::spinOnce();    // process incoming callbacks
-			rate.sleep();
-		}
-	}
-
-	/// An alternative: use AsyncSpinner to let callbacks run in the background
-	void runWithAsyncSpinner()
-	{
-		ros::AsyncSpinner spinner(1);
-		spinner.start();
-		ros::waitForShutdown();
 	}
 
 private:
@@ -250,21 +230,10 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "RoboticArmMovement");
 
+	ros::AsyncSpinner spinner(1);
+	spinner.start();
+
 	RoboticArmController controller;
-
-	// ─────────── OPTION A: use AsyncSpinner ───────────────────────
-	// This lets MoveIt! planning/execution run in the background, and
-	// continuously services the subscriber callback even if plan/execute
-	// calls block briefly.
-	controller.runWithAsyncSpinner();
-
-	// ─────────── OPTION B: use ros::spinOnce() in a loop ──────────
-	// If you uncomment this block instead, your callbacks get processed
-	// only once per iteration, and if a long planning call is happening,
-	// callbacks are deferred. For that reason, AsyncSpinner is usually
-	// more responsive when MoveIt! is doing work.
-
-	// controller.runWithSpinOnce();
 
 	return 0;	
 }
