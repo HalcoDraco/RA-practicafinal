@@ -56,7 +56,7 @@ const float OPEN_GRIPPER_POSE[2] = {
 // "done_pick" - Notify that the pick action is done (no action required)
 // "done_place" - Notify that the place action is done (no action required)
 std_msgs::String orquestator_communication_msg;
-// ros::Publisher orquestator_communication_publisher;
+ros::Publisher orquestator_communication_publisher;
 
 ///// Function declarations /////
 
@@ -67,6 +67,8 @@ int move_arm(const float pose[7], int log_level = 1) {
 	// 		1 - Error
 	// 		2 - Info
 	// Returns 0 on success, 1 on planning failure, 2 on execution failure
+
+	ROS_INFO_STREAM("log_level: " << log_level);
 
 	if (log_level > 2) {
 		ROS_INFO("Entered move_arm");
@@ -94,14 +96,31 @@ int move_arm(const float pose[7], int log_level = 1) {
 
 	move_group.setPoseTarget(target_pose);
 
+	if (log_level > 2) {
+		ROS_INFO("Target pose set to: [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+			target_pose.position.x,
+			target_pose.position.y,
+			target_pose.position.z,
+			target_pose.orientation.x,
+			target_pose.orientation.y,
+			target_pose.orientation.z,
+			target_pose.orientation.w
+		);
+	}
+
 	moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 	moveit::core::MoveItErrorCode plan_success = move_group.plan(my_plan);
+
+	
 	if (plan_success != moveit::core::MoveItErrorCode::SUCCESS) {
 		if (log_level > 0) {
 			ROS_ERROR_STREAM("Planning to target pose failed with error code: " << plan_success);
 		}
 		return 1;
+	} else if (log_level > 1) {
+		ROS_INFO("Planning to target pose succeeded.");
 	}
+
 	moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
 	if (exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
 		if (log_level > 0) {
@@ -153,96 +172,62 @@ int move_gripper(const float gripper_pose[2], int log_level = 1) {
 	return 0;
 }
 
-bool pick_ball_action() {
+void pick_ball_action() {
 	// Move to pick pose
-	int result = move_arm(PICK_POSE, 3);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_arm(PICK_POSE, 3);
 	
 	// Open the gripper
-	result = move_gripper(OPEN_GRIPPER_POSE, 3);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_gripper(OPEN_GRIPPER_POSE, 3);
 
 	// Wait 5 seconds
 	ros::Duration(5.0).sleep();
 
 	// Close the gripper
-	result = move_gripper(CLOSED_GRIPPER_POSE);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_gripper(CLOSED_GRIPPER_POSE);
 
 	// Move to home pose
-	result = move_arm(HOME_POSE);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_arm(HOME_POSE);
 
-	return true; // Return true if the action was successful
 }
 
-bool place_ball_action() {
+void place_ball_action() {
 	// Move to place pose
-	int result = move_arm(PLACE_POSE);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_arm(PLACE_POSE);
 
 	// Open the gripper
-	result = move_gripper(OPEN_GRIPPER_POSE);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_gripper(OPEN_GRIPPER_POSE);
 
 	// Move to home pose
-	result = move_arm(HOME_POSE);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
+	move_arm(HOME_POSE);
 
 	// Close the gripper
-	result = move_gripper(CLOSED_GRIPPER_POSE);
-	if (result != 0) {
-		return false; // Return false if there was an error
-	}
-
-	return true; // Return true if the action was successful
+	move_gripper(CLOSED_GRIPPER_POSE);
 }
 
 void comunicationCallback(const std_msgs::String::ConstPtr &msg)
 {
 	if (msg->data == "pick") {
 		orquestator_communication_msg.data = "none"; // Reset the message to avoid repeated actions
-		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
+		orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
 
 		ROS_INFO("Initiating pick action...");
-		bool result = pick_ball_action();
-		if (result) {
-			ROS_INFO("Pick action completed successfully.");
-		} else {
-			ROS_ERROR("Pick action failed.");
-		}
+		pick_ball_action();
+		ROS_INFO("Pick action completed");
 
 		orquestator_communication_msg.data = "done_pick";
-		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the pick action is done
+		orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the pick action is done
 
 	} else if (msg->data == "place") {
 		orquestator_communication_msg.data = "none"; // Reset the message to avoid repeated actions
-		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
+		orquestator_communication_publisher.publish(orquestator_communication_msg); // Publish the reset message
 
 		ROS_INFO("Initiating place action...");
-		bool result = place_ball_action();
-		if (result) {
-			ROS_INFO("Place action completed successfully.");
-		} else {
-			ROS_ERROR("Place action failed.");
-		}
+		place_ball_action();
+		ROS_INFO("Place action completed");
+		
 
 		orquestator_communication_msg.data = "done_place";
-		// orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the place action is done
+		orquestator_communication_publisher.publish(orquestator_communication_msg); // Notify that the place action is done
 	}
 }
 
@@ -253,16 +238,13 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "RoboticArmMovement");
 	ros::NodeHandle nh;
 	
-	// ros::AsyncSpinner spinner(1);
-	// spinner.start();
+	ros::AsyncSpinner spinner(4);
+	spinner.start();
 
-	// orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
-	// ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
+	orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
+	ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
 
-	pick_ball_action();
-
-	// orquestator_communication_msg.data = "pick"; // Initialize the message to "none"
-	// comunicationCallback(orquestator_communication_msg); // Initial call to set the message
+	// pick_ball_action();
 
 	// ros::Rate loop_rate(1); // 1 Hz
 
@@ -272,7 +254,7 @@ int main(int argc, char **argv)
 	// 	loop_rate.sleep();
 	// }
 
-	// ros::waitForShutdown(); // Wait for shutdown signal
+	ros::waitForShutdown(); // Wait for shutdown signal
 	ros::shutdown(); // Shutdown the ROS node
 
 	return 0;

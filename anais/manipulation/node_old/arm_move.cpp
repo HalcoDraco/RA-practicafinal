@@ -45,22 +45,9 @@ const float OPEN_GRIPPER_POSE_[2] = {
   0.0079
 };
 
-int main(int argc, char** argv)
+void myfunction()
 {
-  ros::init(argc, argv, "tb3_arm_move_example");
-  ros::NodeHandle nh;
-  ros::AsyncSpinner spinner(1);
-  spinner.start();
-
-  //
-  // 1) Create a MoveGroupInterface for the manipulator group
-  //
-  //    In turtlebot3_manipulation_moveit_config, the group name is usually "arm",
-  //    but you can confirm by inspecting:
-  //      rosparam get /move_group/planning_groups
-  //    or by opening the SRDF under your config package.
-  //
-
+  
   moveit::planning_interface::MoveGroupInterface move_group("arm");
   moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
 
@@ -113,20 +100,14 @@ int main(int argc, char** argv)
   //
   ROS_INFO("Starting planning to target pose...");
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-  auto plan_success = move_group.plan(my_plan);
-  bool success = (plan_success == moveit::core::MoveItErrorCode::SUCCESS);
-  if (!success)
-  {
-    ROS_ERROR("Failed to plan to target pose");
-    // ros::shutdown();
-    // return 1;
-  } else {
+	moveit::core::MoveItErrorCode plan_success = move_group.plan(my_plan);
+
+  if (plan_success != moveit::core::MoveItErrorCode::SUCCESS) {
+    ROS_ERROR_STREAM("Planning to target pose failed with error code: " << plan_success);
+	} else {
     ROS_INFO("Planning to goal pose succeeded.");
   }
 
-  //
-  // 5) Execute the plan
-  //
   moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
   if (exe_success != moveit::core::MoveItErrorCode::SUCCESS)
   {
@@ -170,7 +151,16 @@ int main(int argc, char** argv)
   } else {
     ROS_INFO("Execution to close gripper succeeded.");
   }
+}
 
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "tb3_arm_move_example");
+  ros::NodeHandle nh;
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+
+  myfunction();
 
   while (ros::ok())
   {
