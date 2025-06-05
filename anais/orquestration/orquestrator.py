@@ -8,22 +8,18 @@ Responsibilities
 • Maintains a simple finite‑state machine (FSM) that coordinates
   movement, perception and manipulation.
 • Publishes **pick / place / none** commands to the manipulation node.
-• Publishes **goal / stop** strings to the movement node.
-• Listens for **detected_color**, **move_status** and manipulation
-  feedback (**done_pick / done_place**).
-• (Optionally) enables or disables vision while travelling to
-  a container to save compute.
+• Publishes **geometry_msgs/PoseStamped** goals to the movement node.
+• Sends "stop" string to movement node via /move_status.
+• Listens for **detected_color**, **arrived**, and manipulation feedback (**done_pick / done_place**).
+• Enables or disables vision while travelling to a container to save compute.
 
-Message conventions (all *std_msgs/String* unless stated otherwise)
-------------------------------------------------------------------
+Message conventions
+-------------------
 /vision_active         – std_msgs/Bool   (true ⇒ enabled)
 /detected_color        – std_msgs/String  «yellow | blue | green»
-/move_command          – std_msgs/String  «goal:x,y,yaw | stop»
-/move_status           – std_msgs/String  «arrived»
+/move_command          – geometry_msgs/PoseStamped
+/move_status           – std_msgs/String  «arrived | stop»
 /orchestrator_manip    – std_msgs/String  «pick | place | done_pick | done_place | none»
-
-> Change topics or message types here easily if your existing
-> nodes differ; keep the high‑level logic intact.
 """
 
 import random
@@ -32,80 +28,78 @@ from typing import Dict, List
 
 import rospy
 from std_msgs.msg import String, Bool
+from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
 
 # ---------------------------  DATA  -----------------------------------------
 
-# Hard‑coded map coordinates for demo purposes. Replace with parameters or YAML
-# if you prefer.
-HOUSES: List[Dict[str, float]] = [
-    {"name": "house1", "x": 1.0, "y": 2.0, "yaw": 0.0},
-    {"name": "house2", "x": 3.5, "y": -0.5, "yaw": 1.57},
-    {"name": "house3", "x": -2.0, "y": 1.2, "yaw": 3.14},
+# PoseStamped objects with pre-set zero coordinates — to be filled in manually
+HOUSES: List[PoseStamped] = [
+    PoseStamped(header=rospy.Header(frame_id="map"), pose=Pose(position=Point(-0.264999, 1.149999, 0.0), orientation=Quaternion(0.0, 0.0, 0.707106, 0.707106))),
+    PoseStamped(header=rospy.Header(frame_id="map"), pose=Pose(position=Point(-3.632812, 1.359375, 0.0), orientation=Quaternion(0.0, 0.0, 0.687581, 0.726107))),
+    PoseStamped(header=rospy.Header(frame_id="map"), pose=Pose(position=Point(-5.257812, 0.640625, 0.0), orientation=Quaternion(0.0, 0.0, 0.999908, 0.013509)))
 ]
 
-CONTAINERS: Dict[str, Dict[str, float]] = {
-    "yellow": {"x": 5.0, "y": 1.0, "yaw": 0.0},
-    "blue":   {"x": 5.0, "y": -1.0, "yaw": 0.0},
-    "green":  {"x": 5.0, "y":  0.0, "yaw": 0.0},
+CONTAINERS: Dict[str, PoseStamped] = {
+    "yellow": PoseStamped(header=rospy.Header(frame_id="map"), pose=Pose(position=Point(-0.570313, -0.234375, 0.0), orientation=Quaternion(0.0, 0.0, -0.716857, 0.697221))),
+    "blue":   PoseStamped(header=rospy.Header(frame_id="map"), pose=Pose(position=Point(-2.601562, -0.109374, 0.0), orientation=Quaternion(0.0, 0.0, -0.722982, 0.690866))),
+    "green":  PoseStamped(header=rospy.Header(frame_id="map"), pose=Pose(position=Point(-4.664062, 0.078125, 0.0), orientation=Quaternion(0.0, 0.0, -0.707106, 0.707106)))
 }
 
 # ----------------------------------------------------------------------------
 # FSM states
 class State:
-    IDLE = "IDLE"                     # waiting for a house assignment
+    IDLE = "IDLE"
     MOVING_TO_HOUSE = "MOVING_TO_HOUSE"
-    PICKING = "PICKING"
+    #PICKING = "PICKING"
     MOVING_TO_CONTAINER = "MOVING_TO_CONTAINER"
-    PLACING = "PLACING"
-
+    #PLACING = "PLACING"
 
 # -------------------------  ORCHESTRATOR  -----------------------------------
 class Orchestrator:
     def __init__(self):
         self.state = State.IDLE
-        self.lock = threading.RLock()  # protect shared state
+        self.lock = threading.RLock()
         self.current_color: str | None = None
 
         # Publishers
-        self.pub_move  = rospy.Publisher("/move_command", String, queue_size=10)
-        self.pub_manip = rospy.Publisher("/orchestrator_manip", String, queue_size=10)
-        self.pub_vis   = rospy.Publisher("/vision_active", Bool,   queue_size=10)
+        self.pub_move  = rospy.Publisher("/move_command", PoseStamped, queue_size=10)
+        self.pub_move_ctrl = rospy.Publisher("/move_status", String, queue_size=10)
+        #self.pub_manip = rospy.Publisher("/orchestrator_manip", String, queue_size=10)
+        self.pub_vis   = rospy.Publisher("/vision_active", Bool, queue_size=10)
 
         # Subscribers
         rospy.Subscriber("/detected_color", String, self.cb_detected_color)
-        rospy.Subscriber("/move_status",     String, self.cb_move_status)
-        rospy.Subscriber("/orchestrator_manip", String, self.cb_manip_status)
+        rospy.Subscriber("/move_status", String, self.cb_move_status)
+        #rospy.Subscriber("/orchestrator_manip", String, self.cb_manip_status)
 
-        # Start by enabling vision and choosing an initial house
         self.enable_vision(True)
         self.dispatch_new_house()
 
-    # --------------- helper IO ---------------------------------------------
     def enable_vision(self, flag: bool):
         self.pub_vis.publish(Bool(data=flag))
 
-    def send_move_goal(self, pose: Dict[str, float]):
-        s = f"goal:{pose['x']},{pose['y']},{pose['yaw']}"
-        self.pub_move.publish(String(data=s))
-        rospy.loginfo("[Orch] Sent move goal → %s", s)
+    def send_move_goal(self, pose_stamped: PoseStamped):
+        pose_stamped.header.stamp = rospy.Time.now()
+        self.pub_move.publish(pose_stamped)
+        rospy.loginfo("[Orch] Sent move goal")
 
     def cancel_motion(self):
-        self.pub_move.publish(String(data="stop"))
+        self.pub_move_ctrl.publish(String(data="stop"))
         rospy.loginfo("[Orch] Sent STOP to movement node")
 
+    """
     def send_manip_cmd(self, cmd: str):
         self.pub_manip.publish(String(data=cmd))
         rospy.loginfo("[Orch] Sent manip cmd → %s", cmd)
+    """
 
-    # --------------- FSM transitions ---------------------------------------
     def dispatch_new_house(self):
         with self.lock:
             house = random.choice(HOUSES)
             self.state = State.MOVING_TO_HOUSE
             self.send_move_goal(house)
-            rospy.loginfo("[FSM] → MOVING_TO_HOUSE  (%s)", house["name"])
+            rospy.loginfo("[FSM] → MOVING_TO_HOUSE")
 
-    # --------------- callbacks ---------------------------------------------
     def cb_detected_color(self, msg: String):
         with self.lock:
             if self.state == State.MOVING_TO_HOUSE:
@@ -113,13 +107,13 @@ class Orchestrator:
                 if color in CONTAINERS:
                     rospy.loginfo("[Vision] Detected %s", color)
                     self.current_color = color
-
-                    # Pause nav & vision, start pick
                     self.cancel_motion()
                     self.enable_vision(False)
-                    self.send_manip_cmd("pick")
-                    self.state = State.PICKING
-                    rospy.loginfo("[FSM] → PICKING")
+                    #self.send_manip_cmd("pick")
+                    pose = CONTAINERS[color]
+                    self.send_move_goal(pose)
+                    self.state = State.MOVING_TO_CONTAINER
+                    rospy.loginfo("[FSM] → MOVING_TO_CONTAINER  (%s)", self.current_color)
 
     def cb_move_status(self, msg: String):
         with self.lock:
@@ -132,34 +126,33 @@ class Orchestrator:
 
             elif self.state == State.MOVING_TO_CONTAINER:
                 rospy.loginfo("[Move] Arrived at container; issuing place")
-                self.send_manip_cmd("place")
-                self.state = State.PLACING
-                rospy.loginfo("[FSM] → PLACING")
+                #self.send_manip_cmd("place")
+                self.state = State.MOVING_TO_HOUSE
+                self.enable_vision(True)
+                self.dispatch_new_house()
+                
 
+    """
     def cb_manip_status(self, msg: String):
         with self.lock:
             if msg.data == "done_pick" and self.state == State.PICKING:
-                # Head to the appropriate container
                 pose = CONTAINERS[self.current_color]
                 self.state = State.MOVING_TO_CONTAINER
                 self.send_move_goal(pose)
                 rospy.loginfo("[FSM] → MOVING_TO_CONTAINER  (%s)", self.current_color)
 
             elif msg.data == "done_place" and self.state == State.PLACING:
-                # Reset and continue with houses
                 self.current_color = None
                 self.enable_vision(True)
                 self.dispatch_new_house()
                 rospy.loginfo("[FSM] Cycle complete → back to houses")
-
+    """
 
 # -----------------------------  MAIN  ---------------------------------------
-
 def main():
     rospy.init_node("orchestrator_node")
     Orchestrator()
     rospy.spin()
-
 
 if __name__ == "__main__":
     try:
