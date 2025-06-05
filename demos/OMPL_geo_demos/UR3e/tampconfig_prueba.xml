@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Config>
     <Problemfiles>
-        <pddldomain name="~Documents/RA Practica final isiah/domain_3raya.pddl" />
-        <pddlproblem name="~Documents/RA Practica final isiah/problem_3raya" />
-        <kautham name="ur3e_fib_upc.xml" />
+        <pddldomain name="domain_3raya.pddl" />
+        <pddlproblem name="problem_3raya.pddl" />
+        <kautham name="ur3e_fib_upc_nuestro.xml" />
         <directory name="/demos/OMPL_geo_demos/UR3e/"/>
         <graspit name =""/> <!--leave it empty if no graspit is to be used -->
     </Problemfiles>
@@ -12,53 +12,60 @@
         <!-- The Graspcontrols will be to be changed accordingly the new intial object poses-->
         <!-- (be careful: if the objects change their initial room then also the pddl problem file has to be set accordingly) -->
         <Initial>
-            <Object name="X1" kthname="x1">  0.125 0 0.91 1 0 0 0</Object> <!-- orientation in axis-angle (vx,vy,vz,theta) like in the kautham problem files-->
-            <Object name="X2" kthname="x2">  0.125 0 0.91 1 0 0 0</Object>
-            <Object name="X3" kthname="x3">  0.125 0 0.91 1 0 0 0</Object>
-            <Object name="O1" kthname="o1">  0.33 0.234 0.005 0 0 0 2.7868</Object>
-            <Object name="O2" kthname="o2">  0.125 0 0.91 1 0 0 0</Object>
-            <Object name="O3" kthname="o3">  0.125 0 0.91 1 0 0 0</Object>
+            <!--<Object name="X1" kthname="X1"> 0.005 -0.234 0.472 0.0 0.0 0.0 2.7868</Object> 
+            <Object name="X2" kthname="X2">  0.005 -0.058 0.274 0.0 0.0 0.0 2.7868</Object>
+            <Object name="X3" kthname="X3">  0.005 -0.173 0.274 0.0 0.0 0.0 2.7868</Object>
+            <Object name="O1" kthname="O1">  0.005 -0.234 0.33 0.0 0.0 0.0 2.7868</Object>
+            <Object name="O2" kthname="O2">  0.005 0 0.47 0.0 0.0 0.0 2.7868</Object>
+            <Object name="O3" kthname="O3">  0.005 0 0.354 0.0 0.0 0.0 2.7868</Object>-->
+            
+            <Object name="X1" kthname="X1"> -0.47 0.0 0.005 0.0 0.0 0.0 2.7868</Object> 
+            <Object name="X2" kthname="X2"> -0.274 -0.058 0.005 0.0 0.0 0.0 2.7868</Object>
+            <Object name="X3" kthname="X3"> -0.274 -0.173 0.005 0.0 0.0 0.0 2.7868</Object>
+            <Object name="O1" kthname="O1"> -0.354 0.0 0.005 0.0 0.0 0.0 2.7868</Object>
+            <Object name="O2" kthname="O2"> -0.33 -0.234 0.005 0.0 0.0 0.0 2.7868</Object>
+            <Object name="O3" kthname="O3"> -0.472 -0.234 0.005 0.0 0.0 0.0 2.7868</Object>
 
-            <Robot name="UR3E" controlfile="controls/ur3e_robot.cntr"> 0.662338 0.271613 0.760218 0.722817 0.738732 0.659155 0.538 </Robot>
+            <Robot name="UR3E" controlfile="controls/ur3_robotniq_1.cntr"> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Robot>
 
         </Initial>
     </States>
     <Actions>
         <Pick robot="UR3E" object="X3" region="F2">
             <Rob> 0 </Rob> 
-            <Obj> x3 </Obj> 
+            <Obj> X3 </Obj> 
             <Link> 9 </Link> 
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont> 
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols> 
             <Graspcontrols grasp="topgrasp"> 0.544556 0.262083 0.193472 0.283028 0.749361 0.551611 0.538 </Graspcontrols>
-            <!--Pose>1.1 0 0.91 0 0 0 1</Pose-->
+            <!--Pose>0.502306 0.165167 0.383500 0.197722 0.749306 0.753333 0.538</Pose-->
         </Pick>
         
         <Place robot="UR3E" object="X3" region="C9">
             <Rob> 0 </Rob>
-            <Obj> x3 </Obj>
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
-            <Graspcontrols grasp= "topgrasp">0.486944 0.123472 0.379806 0.243417 0.762528 0.524667 0.538</Graspcontrols>
+            <Obj> X3 </Obj>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
+            <Graspcontrols grasp= "topgrasp">0.517972 0.157222 0.321639 0.285194 0.753028 0.518500 0.538</Graspcontrols>
             <!--Poseregion>-0.95 -0.9 0.3 0.35  0.907 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Poseregion>
             <Pose> -0.910 0.314 0.9071908593177795 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Pose-->
         </Place>
 
        <Pick robot="UR3E" object="O3" region="F4">
             <Rob> 0 </Rob> 
-            <Obj> o3 </Obj> 
+            <Obj> O3 </Obj> 
             <Link> 9 </Link> 
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp="topgrasp"> 0.543 0.151 0.329 0.278 0.753 0.572 0.538 </Graspcontrols>
             <!--Pose>1.1 0 0.91 0 0 0 1</Pose-->
         </Pick>
         
         <Place robot="UR3E" object="O3" region="C8">
             <Rob> 0 </Rob>
-            <Obj> o3 </Obj>
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Obj> O3 </Obj>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp= "topgrasp">0.495500 0.125472 0.378444 0.248250 0.752667 0.499306 0.538</Graspcontrols>
             <!--Poseregion>-0.95 -0.9 0.3 0.35  0.907 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Poseregion>
             <Pose> -0.910 0.314 0.9071908593177795 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Pose-->
@@ -68,19 +75,19 @@
         
         <Pick robot="UR3E" object="X2" region="F1">
             <Rob> 0 </Rob> 
-            <Obj> x2 </Obj> 
+            <Obj> X2 </Obj> 
             <Link> 9 </Link> 
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp="topgrasp"> 0.477472 0.217250 0.244083 0.266000 0.748667 0.478611 0.538 </Graspcontrols>
             <!--Pose>1.1 0 0.91 0 0 0 1</Pose-->
         </Pick>
         
         <Place robot="UR3E" object="X2" region="C3">
             <Rob> 0 </Rob>
-            <Obj> x2 </Obj>
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Obj> X2 </Obj>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp= "topgrasp">0.524167 0.222667 0.227139 0.294250 0.760194 0.528306 0.538</Graspcontrols>
             <!--Poseregion>-0.95 -0.9 0.3 0.35  0.907 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Poseregion>
             <Pose> -0.910 0.314 0.9071908593177795 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Pose-->
@@ -90,19 +97,19 @@
         
         <Pick robot="UR3E" object="O2" region="F3">
             <Rob> 0 </Rob> 
-            <Obj> o2 </Obj> 
+            <Obj> O2 </Obj> 
             <Link> 9 </Link> 
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp="topgrasp"> 0.559 0.221 0.230 0.298 0.751 0.574 0.538 </Graspcontrols>
             <!--Pose>1.1 0 0.91 0 0 0 1</Pose-->
         </Pick>
         
         <Place robot="UR3E" object="O2" region="C5">
             <Rob> 0 </Rob>
-            <Obj> o2 </Obj>
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Obj> O2 </Obj>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp= "topgrasp">0.492667 0.162417 0.314750 0.264306 0.752444 0.480139 0.538</Graspcontrols>
             <!--Poseregion>-0.95 -0.9 0.3 0.35  0.907 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Poseregion>
             <Pose> -0.910 0.314 0.9071908593177795 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Pose-->
@@ -110,20 +117,20 @@
         
         <Pick robot="UR3E" object="X1" region="C7">
             <Rob> 0 </Rob> 
-            <Obj> x1 </Obj> 
+            <Obj> X1 </Obj> 
             <Link> 9 </Link> 
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
             <Graspcontrols grasp="topgrasp"> 0.467694 0.119028 0.378833 0.271556 0.747861 0.472361 0.538 </Graspcontrols>
             <!--Pose>1.1 0 0.91 0 0 0 1</Pose-->
         </Pick>
         
         <Place robot="UR3E" object="X1" region="C6">
             <Rob> 0 </Rob>
-            <Obj> x1 </Obj>
-            <Cont>controls/ur3e_robot.cntr</Cont>
-            <Regioncontrols> 0.524 0.232 0.316 0.232 0.272 0.528 0.538 </Regioncontrols>
-            <Graspcontrols grasp= "topgrasp">0.518444 0.170250 0.301167 0.268611 0.761139 0.528583 0.538</Graspcontrols>
+            <Obj> X1 </Obj>
+            <Cont>controls/ur3_robotniq_1.cntr</Cont>
+            <Regioncontrols> 0.513667 0.180667 0.459361 0.141111 0.748667 0.517944 0.538 </Regioncontrols>
+            <Graspcontrols grasp= "topgrasp">0.518444 0.170583 0.314833 0.253417 0.761472 0.528583 0.538 </Graspcontrols>
             <!--Poseregion>-0.95 -0.9 0.3 0.35  0.907 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Poseregion>
             <Pose> -0.910 0.314 0.9071908593177795 0.004158435855060816 0.014741266146302223 -0.9167522192001343 0.3991626501083374</Pose-->
         </Place>
