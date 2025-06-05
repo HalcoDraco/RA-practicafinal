@@ -6,6 +6,8 @@
 
 ///// Constants /////
 
+const int DEFAULT_LOG_LEVEL = 3; // Default log level
+
 // Poses are defined with x, y, z coordinates and orientation in quaternion format (x, y, z, w).
 const float HOME_POSE[7] = {
 	-0.021,  // x
@@ -60,15 +62,13 @@ ros::Publisher orquestator_communication_publisher;
 
 ///// Function declarations /////
 
-int move_arm(const float pose[7], int log_level = 1) {
+int move_arm(const float pose[7], int log_level = DEFAULT_LOG_LEVEL) {
 	// Set the target pose for the arm
 	// log indicates the log level:
 	// 		0 - Silent
 	// 		1 - Error
 	// 		2 - Info
 	// Returns 0 on success, 1 on planning failure, 2 on execution failure
-
-	ROS_INFO_STREAM("log_level: " << log_level);
 
 	if (log_level > 2) {
 		ROS_INFO("Entered move_arm");
@@ -84,6 +84,8 @@ int move_arm(const float pose[7], int log_level = 1) {
 	if (log_level > 2) {
 		ROS_INFO("Planning group created");
 	}
+
+	move_group.setStartStateToCurrentState();
 
 	geometry_msgs::Pose target_pose;
 	target_pose.position.x = pose[0];
@@ -108,33 +110,31 @@ int move_arm(const float pose[7], int log_level = 1) {
 		);
 	}
 
-	moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-	moveit::core::MoveItErrorCode plan_success = move_group.plan(my_plan);
+	moveit::core::MoveItErrorCode success = move_group.move();
 
-	
-	if (plan_success != moveit::core::MoveItErrorCode::SUCCESS) {
+	if (success != moveit::core::MoveItErrorCode::SUCCESS) {
 		if (log_level > 0) {
-			ROS_ERROR_STREAM("Planning to target pose failed with error code: " << plan_success);
+			ROS_ERROR_STREAM("Moving arm to target pose failed with error code: " << success.val);
 		}
 		return 1;
 	} else if (log_level > 1) {
-		ROS_INFO("Planning to target pose succeeded.");
+		ROS_INFO("Moving arm to target pose succeeded.");
 	}
 
-	moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
-	if (exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
-		if (log_level > 0) {
-			ROS_ERROR_STREAM("Execution to target pose failed with error code: " << exe_success);
-		}
-		return 2;
-	}
-	if (log_level > 1) {
-		ROS_INFO("Execution to target pose succeeded.");
-	}
+	// moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
+	// if (exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
+	// 	if (log_level > 0) {
+	// 		ROS_ERROR_STREAM("Execution to target pose failed with error code: " << exe_success);
+	// 	}
+	// 	return 2;
+	// }
+	// if (log_level > 1) {
+	// 	ROS_INFO("Execution to target pose succeeded.");
+	// }
 	return 0;
 }
 
-int move_gripper(const float gripper_pose[2], int log_level = 1) {
+int move_gripper(const float gripper_pose[2], int log_level = DEFAULT_LOG_LEVEL) {
 	// Set the target pose for the gripper
 	// log indicates the log level:
 	// 		0 - Silent
@@ -142,7 +142,13 @@ int move_gripper(const float gripper_pose[2], int log_level = 1) {
 	// 		2 - Info
 	// Returns 0 on success, 1 on planning failure, 2 on execution failure
 
+	if (log_level > 2) {
+		ROS_INFO("Entered move_gripper");
+	}
+
 	moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
+
+	gripper_group.setStartStateToCurrentState();
 
 	std::vector<double> gripper_joint_values = {
 		gripper_pose[0],
@@ -151,36 +157,44 @@ int move_gripper(const float gripper_pose[2], int log_level = 1) {
 
 	gripper_group.setJointValueTarget(gripper_joint_values);
 
-	moveit::planning_interface::MoveGroupInterface::Plan gripper_plan;
-	moveit::core::MoveItErrorCode gripper_plan_success = gripper_group.plan(gripper_plan);
-	if (gripper_plan_success != moveit::core::MoveItErrorCode::SUCCESS) {
+	if (log_level > 2) {
+		ROS_INFO("Gripper joint values set to: [%.4f, %.4f]",
+			gripper_joint_values[0],
+			gripper_joint_values[1]
+		);
+	}
+
+	moveit::core::MoveItErrorCode success = gripper_group.move();
+	if (success != moveit::core::MoveItErrorCode::SUCCESS) {
 		if (log_level > 0) {
-			ROS_ERROR_STREAM("Planning to gripper pose failed with error code: " << gripper_plan_success);
+			ROS_ERROR_STREAM("Moving to gripper pose failed with error code: " << success.val);
 		}
 		return 1;
+	} else if (log_level > 1) {
+		ROS_INFO("Moving to gripper pose succeeded.");
 	}
-	moveit::core::MoveItErrorCode gripper_exe_success = gripper_group.execute(gripper_plan);
-	if (gripper_exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
-		if (log_level > 0) {
-			ROS_ERROR_STREAM("Execution to gripper pose failed with error code: " << gripper_exe_success);
-		}
-		return 2;
-	}
-	if (log_level > 1) {
-		ROS_INFO("Execution to gripper pose succeeded.");
-	}
+	// moveit::core::MoveItErrorCode gripper_exe_success = gripper_group.execute(gripper_plan);
+	// if (gripper_exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
+	// 	if (log_level > 0) {
+	// 		ROS_ERROR_STREAM("Execution to gripper pose failed with error code: " << gripper_exe_success);
+	// 	}
+	// 	return 2;
+	// }
+	// if (log_level > 1) {
+	// 	ROS_INFO("Execution to gripper pose succeeded.");
+	// }
 	return 0;
 }
 
 void pick_ball_action() {
 	// Move to pick pose
-	move_arm(PICK_POSE, 3);
+	move_arm(PICK_POSE);
 	
 	// Open the gripper
-	move_gripper(OPEN_GRIPPER_POSE, 3);
+	move_gripper(OPEN_GRIPPER_POSE);
 
 	// Wait 5 seconds
-	ros::Duration(5.0).sleep();
+	ros::Duration(3.0).sleep();
 
 	// Close the gripper
 	move_gripper(CLOSED_GRIPPER_POSE);
