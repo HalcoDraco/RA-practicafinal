@@ -23,3 +23,5 @@ wget https://github.com/ROBOTIS-GIT/OpenCR-Binaries/raw/master/turtlebot3/ROS1/l
 tar -xvf opencr_update.tar.bz2
 cd ./opencr_update
 ./update.sh $OPENCR_PORT $OPENCR_MODEL.opencr
+
+rostopic pub /orquestator_manipulation std_msgs/String "data: 'pick'" --once

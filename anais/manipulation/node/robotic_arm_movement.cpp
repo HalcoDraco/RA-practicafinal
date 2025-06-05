@@ -37,14 +37,14 @@ const float PLACE_POSE[7] = {
 	0.886    // orientation.w
 };
 
-const float CLOSED_GRIPPER_POSE[2] = {
-	0.0,
-	0.0
+const float OPEN_GRIPPER_POSE[2] = {
+	0.015,
+	0.015
 };
 
-const float OPEN_GRIPPER_POSE[2] = {
-	0.0079,
-	0.0079
+const float CLOSED_GRIPPER_POSE[2] = {
+	0.0066,
+	0.0066
 };
 
 ///// Global variables /////
