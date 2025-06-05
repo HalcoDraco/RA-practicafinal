@@ -1,0 +1,14 @@
+<launch>
+  <!-- 1. Movement node -->
+  <node pkg="robot_final" type="movement_node.py"
+        name="movement" output="screen"/>
+
+  <!-- 2. Vision node -->
+  <node pkg="robot_final" type="vision_node.py"
+        name="vision" output="screen"/>
+
+  <!-- 3. Orchestrator -->
+  <node pkg="robot_final" type="orch2_no_man.py"
+        name="orchestrator" output="screen"
+        required="true"/>
+</launch>
