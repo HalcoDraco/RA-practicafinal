@@ -25,6 +25,8 @@ class GoalCommander:
 
         # Publisher for sending robot status (e.g., "arrived")
         self.status_publisher = rospy.Publisher("/move_status", String, queue_size=10)
+        
+        rospy.on_shutdown(self.shutdown)
 
         rospy.loginfo("Goal Commander node ready.")
 
@@ -63,16 +65,17 @@ class GoalCommander:
             # though done_cb typically fires for terminal states.
             rospy.loginfo("Goal finished with state: %s (%d)", self.move_base_client.get_state_text(state), state)
 
+    def shutdown(self):
+        rospy.loginfo("Cancelling all active goals for move_base...")
+        self.move_base_client.cancel_all_goals()
+        rospy.loginfo("Goals cancelled.")
 
     def move_ctrl_callback(self, msg):
         command = msg.data.lower()
         rospy.loginfo("Received move_ctrl command: %s", command)
 
         if command == "stop":
-            rospy.loginfo("Cancelling all active goals for move_base...")
-            self.move_base_client.cancel_all_goals()
-            rospy.loginfo("Goals cancelled.")
-        
+            self.shutdown()
         else:
             rospy.logwarn("Unknown command received on /move_ctrl: %s", msg.data)
 
