@@ -21,7 +21,7 @@ class GoalCommander:
         rospy.Subscriber("/move_command", PoseStamped, self.goal_callback)
 
         # Subscriber for move status commands (e.g., "stop")
-        rospy.Subscriber("/move_status", String, self.move_status_callback)
+        rospy.Subscriber("/move_ctrl", String, self.move_ctrl_callback)
 
         # Publisher for sending robot status (e.g., "arrived")
         self.status_publisher = rospy.Publisher("/move_status", String, queue_size=10)
@@ -52,6 +52,7 @@ class GoalCommander:
         if state == AS_GoalStatus.SUCCEEDED:
             rospy.loginfo("Goal reached successfully!")
             self.status_publisher.publish(String("arrived"))
+            rospy.loginfo("Published 'arrived' status to /move_status.")
         elif state == AS_GoalStatus.PREEMPTED:
             rospy.logwarn("Goal was preempted (cancelled).")
         elif state == AS_GoalStatus.ABORTED:
@@ -63,18 +64,17 @@ class GoalCommander:
             rospy.loginfo("Goal finished with state: %s (%d)", self.move_base_client.get_state_text(state), state)
 
 
-    def move_status_callback(self, msg):
+    def move_ctrl_callback(self, msg):
         command = msg.data.lower()
-        rospy.loginfo("Received move_status command: %s", command)
+        rospy.loginfo("Received move_ctrl command: %s", command)
 
         if command == "stop":
             rospy.loginfo("Cancelling all active goals for move_base...")
             self.move_base_client.cancel_all_goals()
             rospy.loginfo("Goals cancelled.")
-        elif command == "arrived":
-            rospy.loginfo("Received 'arrived' confirmation.")
+        
         else:
-            rospy.logwarn("Unknown command received on /move_status: %s", msg.data)
+            rospy.logwarn("Unknown command received on /move_ctrl: %s", msg.data)
 
     def run(self):
         rospy.spin()
