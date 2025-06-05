@@ -121,16 +121,6 @@ int move_arm(const float pose[7], int log_level = DEFAULT_LOG_LEVEL) {
 		ROS_INFO("Moving arm to target pose succeeded.");
 	}
 
-	// moveit::core::MoveItErrorCode exe_success = move_group.execute(my_plan);
-	// if (exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
-	// 	if (log_level > 0) {
-	// 		ROS_ERROR_STREAM("Execution to target pose failed with error code: " << exe_success);
-	// 	}
-	// 	return 2;
-	// }
-	// if (log_level > 1) {
-	// 	ROS_INFO("Execution to target pose succeeded.");
-	// }
 	return 0;
 }
 
@@ -173,16 +163,7 @@ int move_gripper(const float gripper_pose[2], int log_level = DEFAULT_LOG_LEVEL)
 	} else if (log_level > 1) {
 		ROS_INFO("Moving to gripper pose succeeded.");
 	}
-	// moveit::core::MoveItErrorCode gripper_exe_success = gripper_group.execute(gripper_plan);
-	// if (gripper_exe_success != moveit::core::MoveItErrorCode::SUCCESS) {
-	// 	if (log_level > 0) {
-	// 		ROS_ERROR_STREAM("Execution to gripper pose failed with error code: " << gripper_exe_success);
-	// 	}
-	// 	return 2;
-	// }
-	// if (log_level > 1) {
-	// 	ROS_INFO("Execution to gripper pose succeeded.");
-	// }
+
 	return 0;
 }
 
@@ -257,16 +238,6 @@ int main(int argc, char **argv)
 
 	orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
 	ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
-
-	// pick_ball_action();
-
-	// ros::Rate loop_rate(1); // 1 Hz
-
-	// while (ros::ok()) {
-	// 	// orquestator_communication_publisher.publish(orquestator_communication_msg);
-	// 	// ros::spinOnce(); // Process incoming messages
-	// 	loop_rate.sleep();
-	// }
 
 	ros::waitForShutdown(); // Wait for shutdown signal
 	ros::shutdown(); // Shutdown the ROS node
