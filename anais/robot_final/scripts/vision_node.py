@@ -109,7 +109,7 @@ class BallColorDetectorNode:
         self.last_process_time = rospy.Time(0)
 
         # Estate variable
-        self.visiion_active = True
+        self.visiion_active = False
 
         # Subscriber: listen to the robot's camera topic
         self.image_sub = rospy.Subscriber(
@@ -134,12 +134,12 @@ class BallColorDetectorNode:
             queue_size=10
         )
 
-        rospy.loginfo("BallColorDetectorNode initialized, waiting for images...")
+        rospy.loginfo("[VIS] BallColorDetectorNode initialized")
 
     def active_callback(self, msg: Bool):
         self.vision_active = msg.data
         status = "active" if self.vision_active else "inactive"
-        rospy.loginfo(f"Vision system is now {status}.")
+        rospy.loginfo(f"[VIS] Vision system is now {status}.")
         self.last_process_time = rospy.Time.now()  # Reset last process time
 
     def camera_callback(self, msg):
@@ -149,16 +149,18 @@ class BallColorDetectorNode:
         and publishes the first detected color (if any), at most once every 0.5s.
         """
         if not self.vision_active:
-            rospy.loginfo("Vision system is inactive, skipping image processing.")
+            #rospy.loginfo("Vision system is inactive, skipping image processing.")
             return
         
         # Check if enough time has passed since the last processing
         now = rospy.Time.now()
-        if (now - self.last_process_time) < self.process_interval:
-            rospy.loginfo("Skipping image processing, waiting for next interval.")
+        if (now - self.last_process_time).to_sec() < self.process_interval:
+            #rospy.loginfo("Skipping image processing, waiting for next interval.")
             return
         
         self.last_process_time = now  # Update last process time
+
+        rospy.loginfo("[VIS] Processing new image...")
         
         try:
             # Convert ROS Image into BGR OpenCV image
@@ -173,10 +175,10 @@ class BallColorDetectorNode:
         # If at least one color is detected, publish the first one and stop vision
         if detected:
             color_to_publish = detected[0]
-            rospy.loginfo(f"Detected color: {color_to_publish}")
+            rospy.loginfo(f"[VIS] Detected color: {color_to_publish}")
             self.color_pub.publish(color_to_publish)
             self.vision_active = False
-            rospy.loginfo("Vision system deactivated after detecting a color.")
+            rospy.loginfo("[VIS] Vision system deactivated after detecting a color.")
 
 
     def run(self):
