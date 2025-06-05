@@ -7,6 +7,7 @@
 ///// Constants /////
 
 const int DEFAULT_LOG_LEVEL = 3; // Default log level
+const int DEFAULT_MOVE_TRIES = 3; // Default number of move attempts
 
 // Poses are defined with x, y, z coordinates and orientation in quaternion format (x, y, z, w).
 const float HOME_POSE[7] = {
@@ -62,7 +63,37 @@ ros::Publisher orquestator_communication_publisher;
 
 ///// Function declarations /////
 
-int move_arm(const float pose[7], int log_level = DEFAULT_LOG_LEVEL) {
+bool move_n_tries(moveit::planning_interface::MoveGroupInterface &move_group, int n_tries = DEFAULT_MOVE_TRIES, int log_level = DEFAULT_LOG_LEVEL)
+{
+	int attempts = 0;
+	while (attempts < n_tries) {
+		if (log_level > 2) {
+			ROS_INFO("Attempt %d of %d to move", attempts + 1, n_tries);
+		}
+
+		move_group.setStartStateToCurrentState(); // Ensure the start state is updated before planning
+
+		moveit::core::MoveItErrorCode success = move_group.move();
+
+		if (success == moveit::core::MoveItErrorCode::SUCCESS) {
+			if (log_level > 2) {
+				ROS_INFO("Move succeeded on attempt %d", attempts + 1);
+			}
+			return true; // Success
+		} else {
+			if (log_level > 2) {
+				ROS_ERROR_STREAM("Move failed with error code: " << success.val);
+			}
+			attempts++;
+			ros::Duration(1.0).sleep(); // Wait before retrying
+		}
+	}
+
+	return false;
+}
+
+int move_arm(const float pose[7], moveit::planning_interface::MoveGroupInterface &arm_group, int log_level = DEFAULT_LOG_LEVEL)
+{
 	// Set the target pose for the arm
 	// log indicates the log level:
 	// 		0 - Silent
@@ -74,18 +105,14 @@ int move_arm(const float pose[7], int log_level = DEFAULT_LOG_LEVEL) {
 		ROS_INFO("Entered move_arm");
 	}
 
-	moveit::planning_interface::MoveGroupInterface move_group("arm");
-
-	move_group.setGoalPositionTolerance(0.03);
-	move_group.setGoalOrientationTolerance(0.1);
-	move_group.setPlanningTime(10.0);
-	move_group.setNumPlanningAttempts(2);
+	arm_group.setGoalPositionTolerance(0.03);
+	arm_group.setGoalOrientationTolerance(0.1);
+	arm_group.setPlanningTime(10.0);
+	arm_group.setNumPlanningAttempts(2);
 
 	if (log_level > 2) {
 		ROS_INFO("Planning group created");
 	}
-
-	move_group.setStartStateToCurrentState();
 
 	geometry_msgs::Pose target_pose;
 	target_pose.position.x = pose[0];
@@ -96,7 +123,7 @@ int move_arm(const float pose[7], int log_level = DEFAULT_LOG_LEVEL) {
 	target_pose.orientation.z = pose[5];
 	target_pose.orientation.w = pose[6];
 
-	move_group.setPoseTarget(target_pose);
+	arm_group.setPoseTarget(target_pose);
 
 	if (log_level > 2) {
 		ROS_INFO("Target pose set to: [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
@@ -110,21 +137,23 @@ int move_arm(const float pose[7], int log_level = DEFAULT_LOG_LEVEL) {
 		);
 	}
 
-	moveit::core::MoveItErrorCode success = move_group.move();
+	int success = move_n_tries(arm_group, DEFAULT_MOVE_TRIES, log_level);
 
-	if (success != moveit::core::MoveItErrorCode::SUCCESS) {
-		if (log_level > 0) {
-			ROS_ERROR_STREAM("Moving arm to target pose failed with error code: " << success.val);
+	if (success) {
+		if (log_level > 1) {
+			ROS_INFO("Moving to arm pose succeeded.");
 		}
-		return 1;
-	} else if (log_level > 1) {
-		ROS_INFO("Moving arm to target pose succeeded.");
+		return 0; // Success
+	} else {
+		if (log_level > 0) {
+			ROS_ERROR("Moving to arm pose failed after %d attempts.", DEFAULT_MOVE_TRIES);
+		}
+		return 1; // Failure
 	}
-
-	return 0;
 }
 
-int move_gripper(const float gripper_pose[2], int log_level = DEFAULT_LOG_LEVEL) {
+int move_gripper(const float gripper_pose[2], moveit::planning_interface::MoveGroupInterface &gripper_group, int log_level = DEFAULT_LOG_LEVEL) 
+{
 	// Set the target pose for the gripper
 	// log indicates the log level:
 	// 		0 - Silent
@@ -135,10 +164,6 @@ int move_gripper(const float gripper_pose[2], int log_level = DEFAULT_LOG_LEVEL)
 	if (log_level > 2) {
 		ROS_INFO("Entered move_gripper");
 	}
-
-	moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
-
-	gripper_group.setStartStateToCurrentState();
 
 	std::vector<double> gripper_joint_values = {
 		gripper_pose[0],
@@ -154,49 +179,65 @@ int move_gripper(const float gripper_pose[2], int log_level = DEFAULT_LOG_LEVEL)
 		);
 	}
 
-	moveit::core::MoveItErrorCode success = gripper_group.move();
-	if (success != moveit::core::MoveItErrorCode::SUCCESS) {
-		if (log_level > 0) {
-			ROS_ERROR_STREAM("Moving to gripper pose failed with error code: " << success.val);
+	int success = move_n_tries(gripper_group, DEFAULT_MOVE_TRIES, log_level);
+	if (success) {
+		if (log_level > 1) {
+			ROS_INFO("Moving to gripper pose succeeded.");
 		}
-		return 1;
-	} else if (log_level > 1) {
-		ROS_INFO("Moving to gripper pose succeeded.");
+		return 0; // Success
+	} else {
+		if (log_level > 0) {
+			ROS_ERROR("Moving to gripper pose failed after %d attempts.", DEFAULT_MOVE_TRIES);
+		}
+		return 1; // Failure
 	}
-
-	return 0;
 }
 
 void pick_ball_action() {
+
+	moveit::planning_interface::MoveGroupInterface arm_group("arm");
+	moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
+
 	// Move to pick pose
-	move_arm(PICK_POSE);
+	move_arm(PICK_POSE, arm_group);
+	ros::Duration(1.0).sleep();
 	
 	// Open the gripper
-	move_gripper(OPEN_GRIPPER_POSE);
+	move_gripper(OPEN_GRIPPER_POSE, gripper_group);
 
-	// Wait 5 seconds
-	ros::Duration(3.0).sleep();
+	// Wait some seconds
+	ros::Duration(4.0).sleep();
 
 	// Close the gripper
-	move_gripper(CLOSED_GRIPPER_POSE);
+	move_gripper(CLOSED_GRIPPER_POSE, gripper_group);
+	ros::Duration(1.0).sleep();
 
 	// Move to home pose
-	move_arm(HOME_POSE);
+	move_arm(HOME_POSE, arm_group);
+	ros::Duration(1.0).sleep();
 
 }
 
 void place_ball_action() {
+
+	moveit::planning_interface::MoveGroupInterface arm_group("arm");
+	moveit::planning_interface::MoveGroupInterface gripper_group("gripper");
+
 	// Move to place pose
-	move_arm(PLACE_POSE);
+	move_arm(PLACE_POSE, arm_group);
+	ros::Duration(1.0).sleep();
 
 	// Open the gripper
-	move_gripper(OPEN_GRIPPER_POSE);
+	move_gripper(OPEN_GRIPPER_POSE, gripper_group);
+	ros::Duration(1.0).sleep();
 
 	// Move to home pose
-	move_arm(HOME_POSE);
+	move_arm(HOME_POSE, arm_group);
+	ros::Duration(1.0).sleep();
 
 	// Close the gripper
-	move_gripper(CLOSED_GRIPPER_POSE);
+	move_gripper(CLOSED_GRIPPER_POSE, gripper_group);
+	ros::Duration(1.0).sleep();
 }
 
 void comunicationCallback(const std_msgs::String::ConstPtr &msg)
