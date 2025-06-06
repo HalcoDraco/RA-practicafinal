@@ -120,7 +120,9 @@ class Orchestrator:
                     self.current_color = color
                     self.cancel_motion()
                     self.enable_vision(False)
+                    rospy.sleep(2)
                     #self.send_manip_cmd("pick")
+                    rospy.sleep(2)
                     pose = CONTAINERS[color]
                     self.send_move_goal(pose)
                     self.state = State.MOVING_TO_CONTAINER

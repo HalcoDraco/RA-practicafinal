@@ -119,7 +119,9 @@ class Orchestrator:
                     self.current_color = color
                     self.cancel_motion()
                     self.enable_vision(False)
+                    rospy.sleep(2)
                     self.send_manip_cmd("pick")
+                    rospy.sleep(2)
                     self.state = State.PICKING
                     rospy.loginfo("[FSM] → PICKING")
 
