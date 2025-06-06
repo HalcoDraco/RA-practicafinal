@@ -9,6 +9,9 @@
 const int DEFAULT_LOG_LEVEL = 3; // Default log level
 const int DEFAULT_MOVE_TRIES = 8; // Default number of move attempts
 
+//Topic
+const std::string ORQUESTATOR_COMMUNICATION_TOPIC = "/orchestrator_manip";
+
 // Poses are defined with x, y, z coordinates and orientation in quaternion format (x, y, z, w).
 const float HOME_POSE[7] = {
 	-0.021,  // x
@@ -277,8 +280,8 @@ int main(int argc, char **argv)
 	ros::AsyncSpinner spinner(2);
 	spinner.start();
 
-	orquestator_communication_publisher = nh.advertise<std_msgs::String>("/orquestator_manipulation", 1000);
-	ros::Subscriber orquestator_communication_subscriber = nh.subscribe("/orquestator_manipulation", 1000, comunicationCallback);
+	orquestator_communication_publisher = nh.advertise<std_msgs::String>(ORQUESTATOR_COMMUNICATION_TOPIC, 1000);
+	ros::Subscriber orquestator_communication_subscriber = nh.subscribe(ORQUESTATOR_COMMUNICATION_TOPIC, 1000, comunicationCallback);
 
 	ros::waitForShutdown(); // Wait for shutdown signal
 	ros::shutdown(); // Shutdown the ROS node

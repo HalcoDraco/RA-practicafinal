@@ -121,7 +121,6 @@ class Orchestrator:
                     self.enable_vision(False)
                     rospy.sleep(2)
                     self.send_manip_cmd("pick")
-                    rospy.sleep(2)
                     self.state = State.PICKING
                     rospy.loginfo("[FSM] → PICKING")
 
@@ -144,12 +143,13 @@ class Orchestrator:
         with self.lock:
             if msg.data == "done_pick" and self.state == State.PICKING:
                 pose = CONTAINERS[self.current_color]
-                self.state = State.MOVING_TO_CONTAINER
                 self.send_move_goal(pose)
+                self.state = State.MOVING_TO_CONTAINER
                 rospy.loginfo("[FSM] → MOVING_TO_CONTAINER  (%s)", self.current_color)
 
             elif msg.data == "done_place" and self.state == State.PLACING:
                 self.current_color = None
+                self.state = State.MOVING_TO_HOUSE #?
                 self.enable_vision(True)
                 self.dispatch_new_house()
                 rospy.loginfo("[FSM] Cycle complete → back to houses")
