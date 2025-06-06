@@ -109,7 +109,7 @@ class BallColorDetectorNode:
         self.last_process_time = rospy.Time(0)
 
         # Estate variable
-        self.visiion_active = False
+        self.vision_active = False
 
         # Subscriber: listen to the robot's camera topic
         self.image_sub = rospy.Subscriber(
