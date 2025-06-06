@@ -41,6 +41,8 @@
 
 
       <!-- Manipulation -->
+      <include file="$(find turtlebot3_manipulation_bringup)/launch/turtlebot3_manipulation_bringup.launch"/>
+      <include file="$(find turtlebot3_manipulation_moveit_config)/launch/move_group.launch"/>
 
 
       <!-- 1. Movement node -->
@@ -51,7 +53,11 @@
       <node pkg="robot_final" type="vision_node.py"
             name="vision" output="screen"/>
 
-      <!-- 3. Orchestrator -->
+      <!-- 3. Manipulation node -->
+      <node pkg="robot_final" type="robotic_arm_movement.cpp"
+            name="RoboticArmMovement" output="screen"/>
+
+      <!-- 4. Orchestrator -->
       <node pkg="robot_final" type="orch.py"
             name="orchestrator" output="screen"
             required="true"/>
