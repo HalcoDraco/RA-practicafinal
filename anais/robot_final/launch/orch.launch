@@ -1,14 +1,30 @@
 <launch>
-  <!-- 1. Movement node -->
-  <node pkg="robot_final" type="movement_node.py"
-        name="movement" output="screen"/>
 
-  <!-- 2. Vision node -->
-  <node pkg="robot_final" type="vision_node.py"
-        name="vision" output="screen"/>
+      <!-- INCLUDES -->
+      <!-- Movement -->
+      <include file="$(find turtlebot3_navigation)/launch/turtlebot3_navigation.launch">
+		<arg name="map_file" value="$(find robofinal)/maps/mapa7.yaml"/>
+	</include>
 
-  <!-- 3. Orchestrator -->
-  <node pkg="robot_final" type="orch.py"
-        name="orchestrator" output="screen"
-        required="true"/>
+      <include file="$(find turtlebot3_navigation)/launch/amcl.launch">
+        <arg name="initial_pose_x" value="0.3438682556152344"/>
+        <arg name="initial_pose_y" value="-0.22586387395858765"/>
+        <arg name="initial_pose_a" value="3.1215927600860596"/>
+      </include>
+
+      <!-- Manipulation -->
+
+
+      <!-- 1. Movement node -->
+      <node pkg="robot_final" type="movement_node.py"
+            name="movement" output="screen"/>
+
+      <!-- 2. Vision node -->
+      <node pkg="robot_final" type="vision_node.py"
+            name="vision" output="screen"/>
+
+      <!-- 3. Orchestrator -->
+      <node pkg="robot_final" type="orch.py"
+            name="orchestrator" output="screen"
+            required="true"/>
 </launch>
