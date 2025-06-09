@@ -1,7 +1,7 @@
 <launch>
 
       <!-- ARGUMENTS -->
-       <arg name="use_gazebo" default="false" />
+      <arg name="use_gazebo" default="false" />
 
       <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]" />
       <arg name="map_file" default="$(find robot_final)/maps/mapa7.yaml" />
