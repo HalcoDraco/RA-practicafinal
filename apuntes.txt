@@ -1,0 +1,59 @@
+pddls -> secuencia de acciones (simbólicas)
+    domain
+    problem
+ur3_xml -> fichero del mundo
+    cada object definido con posición - rotación
+    rotación definido con vector rotación (wx wy wz th)
+tampconfig -> relaciona acciones simbólicas con posiciones reales
+    tiene definidos los objetos y las actions
+    el robot tiene un controlfile además de la posición y rotación
+    las actions tienen
+        regioncontrols -> posición home
+        graspcontrols -> posición a la que va a hacer la acción (si hace el pick, a dónde va a hacer el pick)
+        parámetros robot, object y region con los nombres iguales que los del pddl
+        rob -> índice del robot (0 pq solo hay 1)
+        obj -> igual que parámetro object
+        link -> siempre 9 (no sabemos qué es, la pela)
+    hace falta una acción definida para cada posible acción (para cada combinación de posiciones)
+controlfile del robot -> define el robot (articulaciones, matrices, etc.)
+    el nuestro -> r3_robotniq_1.ctrl
+launchfile -> fichero python necesario para generar el taskfile (llamando a tampconfig), luego se describe cómo
+cómo generar el taskfile:
+    - abrir dos terminales
+    - hacer launch de kautham_ros en terminal 1 (servidor??)
+    - llamar al launch en terminal 2 (cliente??)
+    - cuando sale Action path planning returned True en terminal 2, está done
+taskfile -> define posición a posición por dónde va a pasar el robot
+    contiene transfer y transit
+    cada configuración tiene muchos número, pero nos interesan del ocatvo duodécimo (del 8 al 12 emepzando en 1)
+    transit -> secuencia de configuraciones en las que el robot no lleva nada
+    transfer -> secuencia de configuraciones en las que el robot lleva algo
+    la última posición de cada transit es en el objeto, entonces se llama a cerrar la pinza
+    al final de cada transit, se cierra la pinza, y al final de transfer se abre
+UR3.py -> fichero que procesa y comunica al robot real las cosas del taskfile
+    tenemos dos archivos predefinidos para abrir y cerrar la pinza, que se usan desde este archivo
+Para ejecutar en el robot real:
+    - Encender la tablet con el botón físico metáclico
+    - Encender el robot con el botón en pantalla abajo izquierda
+    - (para mover el robot, apretar el botón de detrás de la tablet y moverlo mientras lo apretas)
+    - Mirar la ip del robot:
+        - tres rayitas arriba a la derecha
+        - "acerca de"
+        - allí ya pone la ip (10.10.73.XXX)
+    - Poner el robot en modo remoto:
+        - arriba a la derecha pone "local"
+        - al clicar, lo pones en "remoto"
+    en el archivo UR3.py
+        - en la constante HOST, se pone la ip del robot y no se cambia el puerto
+        - en XML_FILE, poner el nombre del taskfile (el nombre del taskfile es siempre taskfile_<nombre_tampconfig>.xml)
+        - ABRIR_PINZA y CERRAR_PINZA no se tocan (son los nombres de los archivos predefinidos)
+        - ACC Y VEL no se tocan
+        - DWELL: cuántos segundos espera entre movimiento y movimiento (entre configuración y configuración del taskfile) (tiene que ser mayor que lo que tarda el robot en hacer cada movimiento)
+        - parse_path(): pilla las configuraciones del taskfile de transit y transfer que tiene que mandar al robot
+        - send_joint_path(): manda una configuración al robot para que vaya allí
+        - send_script(): manda el script de abrir o cerrar la pinza
+        - main():
+            - parsea todo el taskfile
+            - conecta al robot
+            - recorre cada bloque, si es transit envía las confs, si es transfer, cierra pinza, mueve y abre.
+
